@@ -82,11 +82,11 @@
 
       <div class="mt-6 grid grid-cols-2 gap-2">
         <button id="loginBtn" class="btn">Giriş</button>
-        <button id="registerBtn" class="btn bg-accent text-black">Yönetici Kaydı</button>
+        <button id="registerBtn" class="btn bg-accent text-black">Patron Kaydı</button>
       </div>
 
       <div class="mt-4 text-xs opacity-70">
-        <div><b>Not:</b> İlk kullanıcı Yönetici olur; kasiyerleri sonra eklersin.</div>
+        <div><b>Not:</b> İlk kullanıcı Patron olur; kasiyerleri sonra eklersin.</div>
       </div>
     </div>
   </section>
@@ -311,7 +311,7 @@
     $('registerBtn').onclick = async ()=>{
       const email = $('email').value.trim(); let password = $('password').value;
       if(!email) return toast('E-posta gir', false);
-      if(!password) { password = prompt('Yeni Yönetici şifresi (min 6)'); if(!password) return; }
+      if(!password) { password = prompt('Yeni Patron şifresi (min 6)'); if(!password) return; }
 
       const { error:e1 } = await supa.auth.signUp({ email, password });
       if(e1) return toast('Kayıt hatası: '+e1.message, false);
@@ -324,7 +324,7 @@
       const { error:e3 } = await supa.rpc('link_profile', { role_in:'owner', tenant_in: TENANT_ID });
       if(e3) return toast('Profil bağlanamadı: '+e3.message, false);
 
-      toast('Yönetici oluşturuldu. Şimdi giriş ekranına döndün.', true);
+      toast('Patron oluşturuldu. Şimdi giriş ekranına döndün.', true);
     };
 
     $('logoutBtn').onclick = async ()=>{ await supa.auth.signOut(); location.reload(); };
@@ -339,7 +339,7 @@
       show('authSection', false);
       show('appSection', true);
       show('logoutBtn', true);
-      $('roleBadge').textContent = profile.role==='owner'?'Yönetici':'Kasiyer';
+      $('roleBadge').textContent = profile.role==='owner'?'Patron':'Kasiyer';
       show('roleBadge', true);
       // İlk ekran
       document.querySelector('[data-tab="today"]').click();
@@ -348,7 +348,7 @@
 
     // ----- CRUD shared -----
     function rowActions(id, kind){
-      // Çöp kutusu (Yönetici + Kasiyer ikisi de silebilir)
+      // Çöp kutusu (Patron + Kasiyer ikisi de silebilir)
       return `<button class="btn btn-sec iconbtn" data-del="${id}" data-kind="${kind}" title="Sil">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>
@@ -479,4 +479,5 @@
   </script>
 </body>
 </html>
+
 
