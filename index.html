@@ -5,21 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ehlizade Muhasebe – Pro</title>
   <meta name="theme-color" content="#225c0a" />
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { primary:'#225c0a', accent:'#e17703', dark:'#0f140f', soft:'#161d16', border:'#233e1a' },
-          boxShadow: { card:'0 12px 30px rgba(0,0,0,.25)' }
-        }
-      }
-    }
+    tailwind.config = { theme: { extend: {
+      colors:{ primary:'#225c0a', accent:'#e17703', dark:'#0f140f', soft:'#161d16', border:'#233e1a' },
+      boxShadow:{ card:'0 12px 30px rgba(0,0,0,.25)' }
+    } } }
   </script>
   <style>
-    body{background:#0f140f;color:#eef0ee;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;}
-    .card{background:#161d16;border:1px solid #233e1a;border-radius:16px;box-shadow:var(--tw-shadow,0 0 #0000),var(--tw-shadow-colored,0 0 #0000);}
+    body{background:#0f140f;color:#eef0ee;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu}
+    .card{background:#161d16;border:1px solid #233e1a;border-radius:16px}
     .chip{border:1px solid #225c0a;border-radius:9999px;padding:10px 16px;cursor:pointer;font-weight:700}
     .chip.active{background:#e17703;color:#000;border-color:#e17703}
     .btn{background:#225c0a;border-radius:12px;padding:12px 18px;font-weight:800}
@@ -32,8 +27,9 @@
     .toast.show{display:block;animation:fadein .2s}
     @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
     .iconbtn{display:inline-flex;align-items:center;gap:8px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px}
+    .modal.show{display:flex}
   </style>
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -43,50 +39,41 @@
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
       <div class="w-9 h-9 rounded-xl bg-primary grid place-items-center font-black">E</div>
       <div class="text-lg font-black tracking-wide text-accent">Ehlizade Muhasebe</div>
-      <nav class="ml-6 hidden md:flex gap-4 text-sm opacity-80">
-        <span>Basit. Hızlı. Güvenli.</span>
-      </nav>
-      <div class="ml-auto flex items-center gap-3 text-sm">
+      <div class="ml-auto flex items-center gap-2 text-sm">
         <span id="roleBadge" class="badge hidden"></span>
+        <button id="adminBtn" class="btn btn-sec hidden">Yönetim</button>
         <button id="logoutBtn" class="btn btn-sec hidden">Çıkış</button>
       </div>
     </div>
   </header>
 
   <!-- Toast -->
-  <div id="toast" class="toast">
-    <div id="toastBox" class="card p-3 text-sm"></div>
-  </div>
+  <div id="toast" class="toast"><div id="toastBox" class="card p-3 text-sm"></div></div>
 
   <!-- AUTH -->
   <section id="authSection" class="max-w-md mx-auto p-4">
-    <div class="card p-8 shadow-card">
+    <div class="card p-8">
       <div class="text-center mb-6">
         <div class="inline-grid place-items-center w-12 h-12 rounded-2xl bg-primary/80 font-black">E</div>
         <h1 class="text-2xl font-black text-accent mt-2">Giriş</h1>
         <p class="text-xs opacity-75">PC / tablet / telefondan güvenle kullan.</p>
       </div>
-
       <label class="block mb-2 text-sm opacity-80">E-posta</label>
       <input id="email" type="email" class="inp mb-4" placeholder="ornek@ehlizade.com" />
-
       <div class="mb-2 flex gap-2 items-end">
         <div class="flex-1">
           <label class="block mb-2 text-sm opacity-80">Şifre</label>
           <input id="password" type="password" class="inp" placeholder="••••••••" />
         </div>
-        <button id="togglePw" class="btn btn-sec" type="button" title="Şifreyi göster">👁️</button>
+        <button id="togglePw" class="btn btn-sec" type="button">👁️</button>
       </div>
-
       <div id="authMsg" class="text-xs mt-2 opacity-80"></div>
-
       <div class="mt-6 grid grid-cols-2 gap-2">
         <button id="loginBtn" class="btn">Giriş</button>
         <button id="registerBtn" class="btn bg-accent text-black">Patron Kaydı</button>
       </div>
-
       <div class="mt-4 text-xs opacity-70">
-        <div><b>Not:</b> İlk kullanıcı Patron olur; kasiyerleri sonra eklersin.</div>
+        <div><b>Not:</b> İlk kullanıcı Patron olur; kasiyerleri panelden eklersin.</div>
       </div>
     </div>
   </section>
@@ -104,117 +91,54 @@
     <!-- TODAY (INCOME) -->
     <section id="tab-today" class="space-y-4">
       <div class="card p-4">
-        <div class="flex items-center gap-3 mb-3">
-          <h3 class="text-accent font-extrabold text-lg">Gelir Kaydı</h3>
-        </div>
+        <h3 class="text-accent font-extrabold text-lg mb-3">Gelir Kaydı</h3>
         <div class="grid md:grid-cols-5 gap-3">
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Tutar (₺)</label>
-            <input id="incAmount" type="number" step="0.01" min="0" class="inp" placeholder="0,00" />
-          </div>
-          <div class="md:col-span-2">
-            <label class="block mb-1 text-sm opacity-80">Ödeme</label>
+          <div><label class="block mb-1 text-sm opacity-80">Tutar (₺)</label><input id="incAmount" type="number" step="0.01" min="0" class="inp" placeholder="0,00" /></div>
+          <div class="md:col-span-2"><label class="block mb-1 text-sm opacity-80">Ödeme</label>
             <div class="flex gap-2">
               <button id="incCash" class="chip active" data-val="cash">NAKİT</button>
               <button id="incCard" class="chip"        data-val="card">KART</button>
             </div>
           </div>
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Personel</label>
-            <input id="incStaff" class="inp" placeholder="(opsiyonel)" />
-          </div>
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Not</label>
-            <input id="incNote" class="inp" placeholder="(opsiyonel)" />
-          </div>
+          <div><label class="block mb-1 text-sm opacity-80">Personel</label><input id="incStaff" class="inp" placeholder="(opsiyonel)" /></div>
+          <div><label class="block mb-1 text-sm opacity-80">Not</label><input id="incNote" class="inp" placeholder="(opsiyonel)" /></div>
         </div>
-        <div class="mt-3 flex gap-2">
-          <button id="saveIncome" class="btn iconbtn">
-            <!-- plus -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            Kaydet
-          </button>
-        </div>
+        <div class="mt-3"><button id="saveIncome" class="btn iconbtn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Kaydet</button></div>
       </div>
 
       <div class="card p-4">
-        <div class="flex items-center gap-3 mb-3">
-          <h4 class="font-bold">Bugünkü Gelirler</h4>
-          <div id="incTotals" class="ml-auto text-sm opacity-80">Nakit: ₺0,00 | Kart: ₺0,00 | Toplam: ₺0,00</div>
-        </div>
-        <div class="overflow-auto">
-          <table class="tbl w-full text-sm">
-            <thead>
-              <tr class="text-left">
-                <th class="p-2">Saat</th>
-                <th class="p-2">Yöntem</th>
-                <th class="p-2">Tutar</th>
-                <th class="p-2">Personel</th>
-                <th class="p-2">Not</th>
-                <th class="p-2 w-24">İşlem</th>
-              </tr>
-            </thead>
-            <tbody id="incBody"></tbody>
-          </table>
-        </div>
+        <div class="flex items-center gap-3 mb-3"><h4 class="font-bold">Bugünkü Gelirler</h4><div id="incTotals" class="ml-auto text-sm opacity-80">Nakit: ₺0,00 | Kart: ₺0,00 | Toplam: ₺0,00</div></div>
+        <div class="overflow-auto"><table class="tbl w-full text-sm"><thead><tr class="text-left">
+          <th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th><th class="p-2 w-32">İşlem</th>
+        </tr></thead><tbody id="incBody"></tbody></table></div>
       </div>
     </section>
 
     <!-- EXPENSE -->
     <section id="tab-expense" class="hidden space-y-4">
       <div class="card p-4">
-        <div class="flex items-center gap-3 mb-3">
-          <h3 class="text-accent font-extrabold text-lg">Gider Kaydı</h3>
-        </div>
+        <h3 class="text-accent font-extrabold text-lg mb-3">Gider Kaydı</h3>
         <div class="grid md:grid-cols-5 gap-3">
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Tutar (₺)</label>
-            <input id="expAmount" type="number" step="0.01" min="0" class="inp" placeholder="0,00" />
-          </div>
-          <div class="md:col-span-2">
-            <label class="block mb-1 text-sm opacity-80">Ödeme</label>
+          <div><label class="block mb-1 text-sm opacity-80">Tutar (₺)</label><input id="expAmount" type="number" step="0.01" min="0" class="inp" placeholder="0,00" /></div>
+          <div class="md:col-span-2"><label class="block mb-1 text-sm opacity-80">Ödeme</label>
             <div class="flex gap-2">
               <button id="expCash" class="chip active" data-val="cash">NAKİT</button>
               <button id="expCard" class="chip"        data-val="card">KART</button>
             </div>
           </div>
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Personel</label>
-            <input id="expStaff" class="inp" placeholder="(opsiyonel)" />
-          </div>
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Not</label>
-            <input id="expNote" class="inp" placeholder="(opsiyonel)" />
-          </div>
+          <div><label class="block mb-1 text-sm opacity-80">Personel</label><input id="expStaff" class="inp" placeholder="(opsiyonel)" /></div>
+          <div><label class="block mb-1 text-sm opacity-80">Not</label><input id="expNote" class="inp" placeholder="(opsiyonel)" /></div>
         </div>
-        <div class="mt-3">
-          <button id="saveExpense" class="btn iconbtn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            Kaydet
-          </button>
-        </div>
+        <div class="mt-3"><button id="saveExpense" class="btn iconbtn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Kaydet</button></div>
       </div>
 
       <div class="card p-4">
-        <div class="flex items-center gap-3 mb-3">
-          <h4 class="font-bold">Bugünkü Giderler</h4>
-          <div id="expTotals" class="ml-auto text-sm opacity-80">Nakit: ₺0,00 | Kart: ₺0,00 | Toplam: ₺0,00</div>
-        </div>
-        <div class="overflow-auto">
-          <table class="tbl w-full text-sm">
-            <thead>
-              <tr class="text-left">
-                <th class="p-2">Saat</th>
-                <th class="p-2">Yöntem</th>
-                <th class="p-2">Tutar</th>
-                <th class="p-2">Personel</th>
-                <th class="p-2">Not</th>
-                <th class="p-2 w-24">İşlem</th>
-              </tr>
-            </thead>
-            <tbody id="expBody"></tbody>
-          </table>
-        </div>
+        <div class="flex items-center gap-3 mb-3"><h4 class="font-bold">Bugünkü Giderler</h4><div id="expTotals" class="ml-auto text-sm opacity-80">Nakit: ₺0,00 | Kart: ₺0,00 | Toplam: ₺0,00</div></div>
+        <div class="overflow-auto"><table class="tbl w-full text-sm"><thead><tr class="text-left">
+          <th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th><th class="p-2 w-32">İşlem</th>
+        </tr></thead><tbody id="expBody"></tbody></table></div>
       </div>
     </section>
 
@@ -222,34 +146,18 @@
     <section id="tab-history" class="hidden space-y-4">
       <div class="card p-4">
         <div class="flex items-end gap-3">
-          <div>
-            <label class="block mb-1 text-sm opacity-80">Tarih</label>
-            <input id="histDate" type="date" class="inp"/>
-          </div>
+          <div><label class="block mb-1 text-sm opacity-80">Tarih</label><input id="histDate" type="date" class="inp"/></div>
           <button id="loadHistory" class="btn">Yükle</button>
           <div id="histTotals" class="ml-auto text-sm opacity-80">Gelir: ₺0,00 | Gider: ₺0,00 | Fark: ₺0,00</div>
         </div>
       </div>
-
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="card p-4">
-          <h4 class="font-bold mb-2">Gelir</h4>
-          <div class="overflow-auto">
-            <table class="tbl w-full text-sm">
-              <thead><tr><th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th></tr></thead>
-              <tbody id="histInc"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card p-4">
-          <h4 class="font-bold mb-2">Gider</h4>
-          <div class="overflow-auto">
-            <table class="tbl w-full text-sm">
-              <thead><tr><th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th></tr></thead>
-              <tbody id="histExp"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="card p-4"><h4 class="font-bold mb-2">Gelir</h4><div class="overflow-auto"><table class="tbl w-full text-sm">
+          <thead><tr><th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th></tr></thead><tbody id="histInc"></tbody>
+        </table></div></div>
+        <div class="card p-4"><h4 class="font-bold mb-2">Gider</h4><div class="overflow-auto"><table class="tbl w-full text-sm">
+          <thead><tr><th class="p-2">Saat</th><th class="p-2">Yöntem</th><th class="p-2">Tutar</th><th class="p-2">Personel</th><th class="p-2">Not</th></tr></thead><tbody id="histExp"></tbody>
+        </table></div></div>
       </div>
     </section>
 
@@ -263,12 +171,42 @@
     </section>
   </main>
 
+  <!-- ADMIN MODAL -->
+  <div id="adminModal" class="modal">
+    <div class="card w-[min(900px,98vw)] p-6">
+      <div class="flex items-center mb-4">
+        <h3 class="text-xl font-extrabold text-accent">Yönetim Paneli</h3>
+        <button id="closeAdmin" class="ml-auto btn btn-sec">Kapat</button>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div class="md:col-span-2">
+          <h4 class="font-bold mb-2">Kullanıcılar</h4>
+          <div class="overflow-auto">
+            <table class="tbl w-full text-sm">
+              <thead><tr><th class="p-2">Email</th><th class="p-2">Rol</th><th class="p-2">Oluşturma</th><th class="p-2 w-40">İşlem</th></tr></thead>
+              <tbody id="userBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold mb-2">Kasiyer Ekle</h4>
+          <label class="block mb-1 text-sm opacity-80">E-posta</label>
+          <input id="newEmail" class="inp mb-3" placeholder="kisi@ornek.com"/>
+          <label class="block mb-1 text-sm opacity-80">Şifre</label>
+          <input id="newPass" type="password" class="inp mb-3" placeholder="min 6"/>
+          <button id="addCashier" class="btn w-full">Ekle</button>
+          <p class="text-xs opacity-70 mt-2">Not: Ekleme sırasında kısa süreli oturum değişir; bittiğinde patron oturumun geri yüklenir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ================= CONFIG (BURAYI DOLDUR) =================
     const SUPABASE_URL      = 'https://fhggiepjjsoirdggzfdq.supabase.co';           // Project Settings > API > Project URL
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoZ2dpZXBqanNvaXJkZ2d6ZmRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MjgxMTYsImV4cCI6MjA3MzUwNDExNn0.0fgefvOvU3T4ovn81Gnr57ywdQyDqR3QmplipuInapc';      // Project Settings > API > anon public key
     const TENANT_ID         = 'be61b393-b62f-4c9a-9686-f9f1c585c755';
-
     // ==========================================================
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -282,15 +220,13 @@
     function active(a,b){ return a.classList.contains('active') ? a.dataset.val : b.dataset.val; }
     function toast(msg, ok=true){ const t=$('toast'), b=$('toastBox'); b.textContent=msg; b.style.borderColor= ok? '#2e8b57':'#a33'; b.style.background= ok? '#163c20':'#441818'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
 
-    // Global state
-    let profile = null; // { id, role, tenant_id }
+    // State
+    let profile = null; // { id, role, tenant_id, email? }
 
     // UI init
     chipGroup($('incCash'), $('incCard'));
     chipGroup($('expCash'), $('expCard'));
     $('histDate').value = todayStr();
-
-    // Password toggle
     $('togglePw').onclick = ()=>{ const i=$('password'); i.type = i.type==='password'?'text':'password' };
 
     // Tabs
@@ -299,7 +235,7 @@
       $('tab-'+t.dataset.tab).classList.remove('hidden');
     });
 
-    // ----- AUTH -----
+    // AUTH
     $('loginBtn').onclick = async ()=>{
       const email = $('email').value.trim(); const password = $('password').value;
       if(!email || !password) return toast('E-posta ve şifre zorunlu', false);
@@ -311,20 +247,14 @@
     $('registerBtn').onclick = async ()=>{
       const email = $('email').value.trim(); let password = $('password').value;
       if(!email) return toast('E-posta gir', false);
-      if(!password) { password = prompt('Yeni Patron şifresi (min 6)'); if(!password) return; }
-
+      if(!password) { password = prompt('Yeni patron şifresi (min 6)'); if(!password) return; }
       const { error:e1 } = await supa.auth.signUp({ email, password });
       if(e1) return toast('Kayıt hatası: '+e1.message, false);
-
-      // oturum aç
       const { error:e2 } = await supa.auth.signInWithPassword({ email, password });
       if(e2) return toast('Oturum açılamadı: '+e2.message, false);
-
-      // profil bağla
-      const { error:e3 } = await supa.rpc('link_profile', { role_in:'owner', tenant_in: TENANT_ID });
+      const { error:e3 } = await supa.rpc('link_profile', { role_in:'owner', tenant_in: TENANT_ID, email_in: email });
       if(e3) return toast('Profil bağlanamadı: '+e3.message, false);
-
-      toast('Patron oluşturuldu. Şimdi giriş ekranına döndün.', true);
+      toast('Patron oluşturuldu. Şimdi giriş yap.', true);
     };
 
     $('logoutBtn').onclick = async ()=>{ await supa.auth.signOut(); location.reload(); };
@@ -332,30 +262,111 @@
     async function afterLogin(){
       const { data:{ user } } = await supa.auth.getUser();
       const { data: prof, error } = await supa.from('profiles')
-        .select('id, role, tenant_id').eq('id', user.id).single();
+        .select('id, role, tenant_id, email, created_at').eq('id', user.id).single();
       if(error || !prof) return toast('Profil bulunamadı. SQL fonksiyonunu kur.', false);
       profile = prof;
-      // UI
+
       show('authSection', false);
       show('appSection', true);
       show('logoutBtn', true);
       $('roleBadge').textContent = profile.role==='owner'?'Patron':'Kasiyer';
       show('roleBadge', true);
+      show('adminBtn', profile.role==='owner'); // sadece patron görür
+
       // İlk ekran
       document.querySelector('[data-tab="today"]').click();
       await loadToday(); await loadExpenseToday(); await loadHistory(); await refreshReport();
     }
 
-    // ----- CRUD shared -----
-    function rowActions(id, kind){
-      // Çöp kutusu (Patron + Kasiyer ikisi de silebilir)
-      return `<button class="btn btn-sec iconbtn" data-del="${id}" data-kind="${kind}" title="Sil">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>
-        </svg> Sil
-      </button>`;
+    // ADMIN PANEL
+    $('adminBtn').onclick = async ()=>{ await refreshUsers(); $('adminModal').classList.add('show'); };
+    $('closeAdmin').onclick = ()=> $('adminModal').classList.remove('show');
+
+    async function refreshUsers(){
+      // Patron kendi tenant'ındaki tüm profilleri görebilir (policy ile)
+      const { data, error } = await supa.from('profiles')
+        .select('id, email, role, created_at')
+        .eq('tenant_id', profile.tenant_id)
+        .order('created_at',{ascending:true});
+
+      if(error){ toast('Kullanıcı listesi alınamadı: '+error.message, false); return; }
+
+      $('userBody').innerHTML = (data||[]).map(u=>{
+        const self = u.id === profile.id;
+        const roleLabel = u.role==='owner'?'Patron':'Kasiyer';
+        return `<tr class="odd:bg-soft">
+          <td class="p-2">${u.email||'(email yok)'}</td>
+          <td class="p-2">${roleLabel}</td>
+          <td class="p-2">${new Date(u.created_at).toLocaleString('tr-TR')}</td>
+          <td class="p-2 flex gap-2">
+            <button class="btn btn-sec text-xs" data-role="${u.id}" data-to="${u.role==='owner'?'cashier':'owner'}" ${self?'disabled':''}>
+              Rolü ${u.role==='owner'?'Kasiyer':'Patron'} yap
+            </button>
+            <button class="btn btn-sec text-xs" data-delprof="${u.id}" ${self?'disabled':''}>Profili Sil</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // Role change
+      document.querySelectorAll('[data-role]').forEach(b=>{
+        b.onclick = async ()=>{
+          const uid = b.getAttribute('data-role');
+          const to  = b.getAttribute('data-to');
+          if(!confirm('Rol değişsin mi?')) return;
+          const { error } = await supa.rpc('set_role', { target_user: uid, new_role: to });
+          if(error){ toast('Rol değişmedi: '+error.message, false); return; }
+          toast('Rol güncellendi'); await refreshUsers();
+          // Eğer kendini düşürdüysen (disabled ile engelledik), oturumu yenilemek gerekir.
+        };
+      });
+
+      // Delete profile (uyarı: auth.users silinmez, sadece profiles satırı)
+      document.querySelectorAll('[data-delprof]').forEach(b=>{
+        b.onclick = async ()=>{
+          const uid = b.getAttribute('data-delprof');
+          if(!confirm('Bu kullanıcının profilini silmek istediğine emin misin?')) return;
+          const { error } = await supa.from('profiles').delete().eq('id', uid).eq('tenant_id', profile.tenant_id);
+          if(error){ toast('Profil silinemedi: '+error.message, false); return; }
+          toast('Profil silindi'); await refreshUsers();
+        };
+      });
     }
 
+    // Add cashier without losing owner session (save/restore session)
+    $('addCashier').onclick = async ()=>{
+      const email = $('newEmail').value.trim();
+      const password = $('newPass').value;
+      if(!email || !password) return toast('Email ve şifre zorunlu', false);
+
+      // Save current owner session tokens
+      const sess = await supa.auth.getSession();
+      const prev = sess?.data?.session;
+      if(!prev){ return toast('Oturum bulunamadı', false); }
+
+      // 1) signUp kasiyer
+      const { error: e1 } = await supa.auth.signUp({ email, password });
+      if(e1){ return toast('Kayıt hatası: '+e1.message, false); }
+
+      // 2) kasiyer oturumu yoksa login
+      const { data:{ session: cs }, error: e2 } = await supa.auth.getSession();
+      if(!cs || e2){ const { error: ee } = await supa.auth.signInWithPassword({ email, password });
+        if(ee){ return toast('Kasiyer oturumu açılamadı: '+ee.message, false); }
+      }
+
+      // 3) profil bağla (cashier) ve email'i yaz
+      const { error: e3 } = await supa.rpc('link_profile', { role_in:'cashier', tenant_in: TENANT_ID, email_in: email });
+      if(e3){ return toast('Profil bağlanamadı: '+e3.message, false); }
+
+      // 4) eski patron oturumunu geri yükle
+      const { error: e4 } = await supa.auth.setSession({ access_token: prev.access_token, refresh_token: prev.refresh_token });
+      if(e4){ return toast('Patron oturumu geri yüklenemedi: '+e4.message, false); }
+
+      $('newEmail').value=''; $('newPass').value='';
+      toast('Kasiyer eklendi'); await refreshUsers();
+    };
+
+    // ===================== ENTRIES (CRUD) =====================
+    function rowActions(id){ return `<button class="btn btn-sec text-xs" data-del="${id}" title="Sil">🗑 Sil</button>`; }
     function bindDeleteHandlers(containerId, reloadFn){
       document.querySelectorAll('#'+containerId+' [data-del]').forEach(btn=>{
         btn.onclick = async ()=>{
@@ -368,7 +379,6 @@
       });
     }
 
-    // ----- INCOME TODAY -----
     async function loadToday(){
       const { data, error } = await supa.from('entries')
         .select('id, method, amount, staff, note, at_time')
@@ -383,7 +393,7 @@
           <td class="p-2">₺${fmt(r.amount)}</td>
           <td class="p-2">${r.staff||''}</td>
           <td class="p-2">${r.note||''}</td>
-          <td class="p-2">${rowActions(r.id,'income')}</td>
+          <td class="p-2">${rowActions(r.id)}</td>
         </tr>`).join('');
       bindDeleteHandlers('incBody', loadToday);
       let c=0,k=0; rows.forEach(r=> r.method==='cash'? c+=Number(r.amount):k+=Number(r.amount));
@@ -403,7 +413,6 @@
       $('incAmount').value=''; $('incNote').value=''; toast('Gelir eklendi'); await loadToday();
     };
 
-    // ----- EXPENSE TODAY -----
     async function loadExpenseToday(){
       const { data, error } = await supa.from('entries')
         .select('id, method, amount, staff, note, at_time')
@@ -418,7 +427,7 @@
           <td class="p-2">₺${fmt(r.amount)}</td>
           <td class="p-2">${r.staff||''}</td>
           <td class="p-2">${r.note||''}</td>
-          <td class="p-2">${rowActions(r.id,'expense')}</td>
+          <td class="p-2">${rowActions(r.id)}</td>
         </tr>`).join('');
       bindDeleteHandlers('expBody', loadExpenseToday);
       let c=0,k=0; rows.forEach(r=> r.method==='cash'? c+=Number(r.amount):k+=Number(r.amount));
@@ -438,7 +447,7 @@
       $('expAmount').value=''; $('expNote').value=''; toast('Gider eklendi'); await loadExpenseToday();
     };
 
-    // ----- HISTORY -----
+    // HISTORY
     $('loadHistory').onclick = loadHistory;
     async function loadHistory(){
       const d = $('histDate').value || todayStr();
@@ -458,7 +467,7 @@
       $('histTotals').textContent = `Gelir: ₺${fmt(incSum)} | Gider: ₺${fmt(expSum)} | Fark: ₺${fmt(incSum-expSum)}`;
     }
 
-    // ----- REPORT -----
+    // REPORT
     $('refreshReport').onclick = refreshReport;
     async function refreshReport(){
       const d = todayStr();
@@ -474,10 +483,8 @@
       ].map(l=>`<div>• ${l}</div>`).join('');
     }
 
-    // Auto-login
+    // Boot: varsa oturumla devam
     (async ()=>{ const { data:{ session } } = await supa.auth.getSession(); if(session){ await afterLogin(); } })();
   </script>
 </body>
 </html>
-
-
